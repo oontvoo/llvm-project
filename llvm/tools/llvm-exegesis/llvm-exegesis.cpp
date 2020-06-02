@@ -145,6 +145,12 @@ static cl::opt<std::string>
                                       cl::desc(""), cl::cat(AnalysisOptions),
                                       cl::init(""));
 
+static cl::opt<std::string>
+    ExpectedHostCpu("expected-host-cpu",
+                    cl::desc("if non-empty, only run the benchmark if the host "
+                             "CPU matches the given name."),
+                    cl::cat(Options), cl::init(""));
+
 static cl::opt<bool> AnalysisDisplayUnstableOpcodes(
     "analysis-display-unstable-clusters",
     cl::desc("if there is more than one benchmark for an opcode, said "
@@ -281,6 +287,13 @@ void benchmarkMain() {
 
   const LLVMState State(CpuName);
 
+  if (!ExpectedHostCpu.empty()) {
+    // The actual name could include variations, such as "skylake" vs
+    // "skylake-avx512" so we don't look for exact match.
+    std::string actual(State.getTargetMachine().getTargetCPU().data());
+    if (actual.find(ExpectedHostCpu) == std::string::npos)
+      ExitWithError("Unexpected host CPU " + actual);
+  }
   const std::unique_ptr<BenchmarkRunner> Runner = ExitOnErr(
       State.getExegesisTarget().createBenchmarkRunner(BenchmarkMode, State));
   if (!Runner) {

@@ -57,8 +57,9 @@ public:
   // e.g. "snb_ep::INSTRUCTION_RETIRED:e=0:i=0:c=0:t=0:u=1:k=0:mg=0:mh=1"
   StringRef getPfmEventString() const;
 
-private:
-  const std::string EventString;
+protected:
+  PerfEvent() = default;
+  std::string EventString;
   std::string FullQualifiedEventString;
   perf_event_attr *Attr;
 };
@@ -87,7 +88,7 @@ public:
   /// Returns the current value of the counter or error if it cannot be read.
   virtual llvm::Expected<int64_t> readOrError() const;
 
-private:
+protected:
   PerfEvent Event;
 #ifdef HAVE_LIBPFM
   int FileDescriptor = -1;
